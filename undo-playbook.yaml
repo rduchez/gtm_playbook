@@ -1,0 +1,76 @@
+---
+
+- name: Create a VIP, pool, pool members and nodes
+  hosts: big-ip01.internal
+  connection: local
+
+  tasks:
+      - name: remove  Wide IP
+        bigip_gtm_wide_ip:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            name: my-wide-ip.example.com
+            type: a
+            state: "absent"
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: Remove pool member to pool "pool01"
+        bigip_gtm_pool_member:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            pool: "pool01"
+            transport: rest
+            server_name: GTM_generic-host_Server
+            virtual_server: GTM_generic-host_virtualServer
+            type: a
+            state: "absent"
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: Delete dns pool "pool01"
+        bigip_gtm_pool:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            name: "pool01"
+            type: a
+            state: "absent"
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: Delete virtual-server "generic host virtual server 01"
+        bigip_gtm_virtual_server:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            virtual_server_name: GTM_generic-host_virtualServer
+            virtual_server_server: GTM_generic-host_Server
+            state: "absent"
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: delete server "generic host 01"
+        bigip_gtm_server:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            name: GTM_generic-host_Server
+            datacenter: /Common/home
+            server_type: generic-host
+            state: "absent"
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: Delete data center "home"
+        bigip_gtm_datacenter:
+            name: "home"
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            location: "where i am"
+            user: "{{ bigip_username }}"
+            validate_certs: "{{ validate_certs }}"
+            state: "absent"
+        delegate_to: localhost

@@ -1,0 +1,84 @@
+---
+
+- name: Create a VIP, pool, pool members and nodes
+  hosts: big-ip01.internal
+  connection: local
+
+  tasks:
+      - name: Create data center "home"
+        bigip_gtm_datacenter:
+            name: "home"
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            location: "where i am"
+            user: "{{ bigip_username }}"
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+       
+      - name: Create server "generic host 01"
+        bigip_gtm_server:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            name: GTM_generic-host_Server
+            datacenter: /Common/home
+            server_type: generic-host
+            link_discovery: disabled
+            virtual_server_discovery: disabled
+            devices:
+              - {'name': 'server_1', 'address': '10.1.1.1'}
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: Create virtual-server "generic host virtual server 01"
+        bigip_gtm_virtual_server:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            virtual_server_name: GTM_generic-host_virtualServer
+            virtual_server_server: GTM_generic-host_Server
+            host: 10.1.1.1
+            port: 443
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost        
+
+      - name: Create dns pool "pool01"
+        bigip_gtm_pool:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            name: "pool01"
+            type: a
+            preferred_lb_method: round-robin
+            fallback_lb_method: fallback-ip
+            fallback_ip: 10.0.0.1
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: Add pool member to pool "pool01"
+        bigip_gtm_pool_member:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            pool: "pool01"
+            transport: rest
+            server_name: GTM_generic-host_Server
+            virtual_server: GTM_generic-host_virtualServer
+            type: a
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
+      - name: Assign a pool with ratio to the Wide IP
+        bigip_gtm_wide_ip:
+            password: "{{ bigip_password }}"
+            server: "{{ ansible_host }}"
+            user: "{{ bigip_username }}"
+            lb_method: round-robin
+            name: my-wide-ip.example.com
+            type: a
+            pools:
+              - name: pool01
+                ratio: 100
+            validate_certs: "{{ validate_certs }}"
+        delegate_to: localhost
+
