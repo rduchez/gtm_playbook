@@ -14,9 +14,12 @@ The files include 2 playbooks:
 The target hosts are defined in the ./inventory/hosts file
 The username, password are stored in the host_vars/[hostname] directory - current values are default BIG-IP username and passwords
 To run the playbooks from the shell, from the directory where the playbook files are located:
-# ansible-playbook -i inventory/hosts playbook.yaml -vvv
+
+[playbook-directory]\# ansible-playbook -i inventory/hosts playbook.yaml -vvv
+
 or to delete the create objects:
-#nansible-playbook -i inventory/hosts undo-playbook.yaml -vvv
+
+[playbook-directory]\# ansible-playbook -i inventory/hosts undo-playbook.yaml -vvv
 
 The playbooks leverage the REST and SOAP API's on the target BIG-IP.
 
